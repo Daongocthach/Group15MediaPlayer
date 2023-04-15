@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "85772904132",
+    "project_id": "group15mediaplayer-c19f1",
+    "storage_bucket": "group15mediaplayer-c19f1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:85772904132:android:4bbf150345cbc09260cb91",
+        "android_client_info": {
+          "package_name": "hcmute.thach.group15mediaplayer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "85772904132-ouu09gkgp7uls5g8u4rk5gghu0d0dhau.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYYTv3ZMjxrtGNnY_bSkZwXevXpTNXCfE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "85772904132-ouu09gkgp7uls5g8u4rk5gghu0d0dhau.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
