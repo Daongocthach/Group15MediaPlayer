@@ -3,9 +3,11 @@ package hcmute.thach.group15mediaplayer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -16,6 +18,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +33,7 @@ import Model.Song;
 
 public class MediaActivity extends AppCompatActivity {
     ImageView img_home;
+    ImageView signOut;
     ImageView img_upload;
     RecyclerView recyclerView, recyclerViewNew;
     private CategoryAdapter categoryAdapter;
@@ -37,6 +42,8 @@ public class MediaActivity extends AppCompatActivity {
     private FirebaseStorage mStorage;
     private DatabaseReference mDatabaseRef;
     private ValueEventListener mDBListener;
+    private FirebaseAuth.AuthStateListener authListener;
+    private FirebaseAuth auth;
     List<Song> listSong = new ArrayList<>();;
     List<Category> listCategory = new ArrayList<>();
     @Override
@@ -45,40 +52,7 @@ public class MediaActivity extends AppCompatActivity {
         setContentView(R.layout.media_layout);
         img_home = findViewById(R.id.imageViewhome);
         img_upload = findViewById(R.id.image_upload);
-//        recyclerView = (RecyclerView) findViewById(R.id.recycle_view);
-//        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL,false);
-//        recyclerView.setLayoutManager(linearLayoutManager);
-//        categoryAdapter = new CategoryAdapter(this);
-//        categoryAdapter.setData(getListCategory());
-//        recyclerView.setAdapter(categoryAdapter);
-
-        recyclerViewNew = (RecyclerView) findViewById(R.id.recycle_view_new);
-        LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(this, RecyclerView.VERTICAL,false);
-        recyclerViewNew.setLayoutManager(linearLayoutManager1);
-        newSongAdapter = new NewSongAdapter(getListSong(), new IClickItem() {
-            @Override
-            public void onClickItemSong(Song song) {
-                onCLickGoToPlayMedia(song);
-            }
-        });
-        newSongAdapter.setData(getListSong());
-        recyclerViewNew.setAdapter(newSongAdapter);
-        //recyclerView.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener());
-
-        img_home.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MediaActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
-        });
-        img_upload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MediaActivity.this, UploadFileActivity.class);
-                startActivity(intent);
-            }
-        });
+        signOut = (ImageView) findViewById(R.id.sign_out);
         mStorage = FirebaseStorage.getInstance();
         mDatabaseRef = FirebaseDatabase.getInstance().getReference("audios");
         mDBListener = mDatabaseRef.addValueEventListener(new ValueEventListener() {
@@ -98,38 +72,59 @@ public class MediaActivity extends AppCompatActivity {
                 Toast.makeText(MediaActivity.this, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+        //get firebase auth instance
+        auth = FirebaseAuth.getInstance();
 
-    }
+        //get current user
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    private List<Category> getListCategory(){
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
+                    // user auth state is changed - user is null
+                    // launch login activity
+                    startActivity(new Intent(MediaActivity.this, LoginActivity.class));
+                    finish();
+                }
+            }
+        };
+        signOut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                auth.signOut();
+            }
+        });
+        recyclerViewNew = (RecyclerView) findViewById(R.id.recycle_view_new);
+        LinearLayoutManager linearLayoutManager1 = new LinearLayoutManager(this, RecyclerView.VERTICAL,false);
+        recyclerViewNew.setLayoutManager(linearLayoutManager1);
 
-//        String str1 = "https://firebasestorage.googleapis.com/v0/b/insertdata-f6680.appspot.com/o/file_music.mp3?alt=media&token=7185e11f-c175-44ef-825f-fd90b2a53166";
-//        String str2 = "https://th.bing.com/th/id/OIP.iSu2RcCcdm78xbxNDJMJSgHaEo?pid=ImgDet&rs=1";
-//        listSong.add(new Song("JingleBell", "Christmas Song", str2, str1));
-//        listSong.add(new Song("Moonlight Sonata", "Beethoven", str2, str1));
-//        listSong.add(new Song("Requiem", "Mozart", str2, str1));
-//        listSong.add(new Song("Nocturne", "Christmas Song", str2, str1));
-//        listSong.add(new Song("Sonata", "Christmas Song", str2, str1));
-//        listSong.add(new Song("Tom and Jerry", "Christmas Song", str2, str1));
-//        listSong.add(new Song("JingleBell", "Christmas Song", str2, str1));
+        newSongAdapter = new NewSongAdapter(listSong, new IClickItem() {
+            @Override
+            public void onClickItemSong(Song song) {
+                onCLickGoToPlayMedia(song);
+            }
+        });
+        newSongAdapter.setData(listSong);
+        recyclerViewNew.setAdapter(newSongAdapter);
+
+        img_home.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+        img_upload.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MediaActivity.this, UploadFileActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
-        listCategory.add(new Category("Danh sách nhạc",listSong));
-        listCategory.add(new Category("Nhạc nổi bật",listSong));
-        listCategory.add(new Category("Bảng xếp hạng tuần",listSong));
-        return listCategory;
-    }
-    private List<Song> getListSong() {
-//        String str1 = "https://firebasestorage.googleapis.com/v0/b/insertdata-f6680.appspot.com/o/file_music.mp3?alt=media&token=7185e11f-c175-44ef-825f-fd90b2a53166";
-//        String str2 = "https://th.bing.com/th/id/OIP.iSu2RcCcdm78xbxNDJMJSgHaEo?pid=ImgDet&rs=1";
-//        listSong.add(new Song("JingleBell", "Christmas Song", str2, str1));
-//        listSong.add(new Song("Moonlight Sonata", "Beethoven", str2, str1));
-//        listSong.add(new Song("Requiem", "Mozart", str2, str1));
-//        listSong.add(new Song("Nocturne", "Christmas Song", str2, str1));
-//        listSong.add(new Song("Sonata", "Christmas Song", str2, str1));
-//        listSong.add(new Song("Tom and Jerry", "Christmas Song", str2, str1));
-//        listSong.add(new Song("JingleBell", "Christmas Song", str2, str1));
-        return listSong;
     }
     private void onCLickGoToPlayMedia(Song song){
         Intent intent = new Intent(this, PlayMediaActivity.class);

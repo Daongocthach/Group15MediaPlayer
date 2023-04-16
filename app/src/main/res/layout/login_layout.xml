@@ -13,31 +13,30 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/test_background" />
 
-    <ImageView
-        android:id="@+id/imageView1"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginStart="156dp"
-        android:layout_marginTop="120dp"
-        android:src="@drawable/mediaplayer"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <LinearLayout
         android:id="@+id/linearLayout"
+        android:layout_marginTop="150dp"
         android:layout_width="match_parent"
-        android:layout_height="500dp"
+        android:layout_height="match_parent"
         android:background="@drawable/background_bottom"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="122dp">
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:src="@drawable/music" />
 
         <TextView
             android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="10dp"
             android:text="Email"
             android:textColor="@color/black"
             android:textSize="24dp"
@@ -45,12 +44,15 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
-            android:id="@+id/edt_email"
+            android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
             android:hint="Example: group15@gmail.com"
+            android:inputType="text"
+            android:textColor="@color/black"
+            android:textColorHint="@color/dark_gray"
             android:textSize="24dp" />
 
         <TextView
@@ -66,7 +68,7 @@
             app:layout_constraintStart_toStartOf="parent" />
 
         <EditText
-            android:id="@+id/edt_password"
+            android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
@@ -74,30 +76,35 @@
             android:hint="*********"
             android:inputType="textPassword"
             android:textColor="@color/black"
+            android:textColorHint="@color/dark_gray"
             android:textSize="24dp" />
 
-        <TextView
-            android:id="@+id/textView4"
+        <Button
+            android:id="@+id/btn_reset_password"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
+            android:layout_gravity="center"
             android:layout_marginTop="20dp"
+            android:backgroundTint="@color/white_pink"
             android:text="Forgot your password? Recovery it!"
-            android:textColor="#555555"
+            android:textColor="@color/orange"
             android:textSize="15dp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent" />
-        <TextView
-            android:id="@+id/txt_signup"
+
+        <Button
+            android:id="@+id/btn_signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp"
+            android:layout_gravity="center"
             android:layout_marginTop="5dp"
+            android:backgroundTint="@color/white_pink"
             android:text="Sign up?"
             android:textColor="#555555"
             android:textSize="18dp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -171,24 +178,21 @@
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:background="@drawable/social_background"
-            android:backgroundTint="@color/gray"
+            android:backgroundTint="@color/highlight_orange"
             android:text="Login"
             android:textColor="#ffffff"
             android:textStyle="bold" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center|bottom"
+            android:layout_marginBottom="20dp"
+            android:visibility="gone" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="288dp"
-        android:text="Login"
-        android:textColor="#ffffff"
-        android:textSize="40dp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+
 
     
 </androidx.constraintlayout.widget.ConstraintLayout>
