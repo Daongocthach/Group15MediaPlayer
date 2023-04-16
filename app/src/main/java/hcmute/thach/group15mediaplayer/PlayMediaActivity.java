@@ -1,34 +1,48 @@
 package hcmute.thach.group15mediaplayer;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.content.BroadcastReceiver;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
 
 import Model.Song;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class PlayMediaActivity extends AppCompatActivity {
+    private static final int REQUEST_PERMISSION_CODE = 10;
     private FloatingActionButton btn;
-    private ImageView imageMusic, imgPlay;
+    private CircleImageView imageMusic;
+    private ImageView imgPlay;
     private TextView textViewName, textViewMusican;
     private MediaPlayer mediaPlayer;
 
     private RelativeLayout layout_bottom;
-    private ImageView imgSong, imgPlayOrPause, imgClose;
+    private CircleImageView imgSong;
+    private ImageView imgPlayOrPause, imgClose;
     private TextView tvTitle, tvSingle;
     private ImageView btnStartService;
     private FloatingActionButton btnStopService;
@@ -44,7 +58,7 @@ public class PlayMediaActivity extends AppCompatActivity {
                 .getInstance(this)
                 .registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 
-        imageMusic = (ImageView) findViewById(R.id.imageMusic);
+        imageMusic = findViewById(R.id.imageMusic);
         textViewName = findViewById(R.id.tvName);
         textViewMusican = findViewById(R.id.tvmusician);
 
@@ -56,17 +70,63 @@ public class PlayMediaActivity extends AppCompatActivity {
         imgClose = findViewById(R.id.close);
         tvTitle = findViewById(R.id.tv_tittle);
         tvSingle = findViewById(R.id.tv_single_song);
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
         Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
             Song song = (Song) bundle.get("object_song");
             if (song != null) {
                 mSong = song;
+                textViewMusican.setText(song.getSingle());
+                textViewName.setText(song.getTittle());
+                Picasso.get()
+                        .load(song.getImage().trim())
+                        .into(imageMusic);
             }
         }
         btnStartService.setOnClickListener((view -> clickStartService(mSong)));
-        btnStopService.setOnClickListener((view -> clickStopService()));
+        btnStopService.setOnClickListener((view -> checkPermission()));
     }
+    public void checkPermission(){
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+                String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
+                requestPermissions(permission, REQUEST_PERMISSION_CODE);
+            } else{
+                startDowloadFile();
+            }
+        } else{startDowloadFile();}
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_PERMISSION_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startDowloadFile();
+            } else {
+                Toast.makeText(this, "Permisson Denied", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void startDowloadFile() {
+        String urlFile = mSong.getResource();
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(urlFile));
+        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
+        request.setTitle("Download");
+        request.setDescription("Download file...");
+
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, String.valueOf(System.currentTimeMillis()));
+
+        DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        if(downloadManager != null){
+            downloadManager.enqueue(request);
+        }
+    }
+
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -158,15 +218,11 @@ public class PlayMediaActivity extends AppCompatActivity {
     }
 
     private void clickStartService(Song song) {
-        String str1 = "https://firebasestorage.googleapis.com/v0/b/insertdata-f6680.appspot.com/o/file_music.mp3?alt=media&token=7185e11f-c175-44ef-825f-fd90b2a53166";
-        String str2 = "https://th.bing.com/th/id/OIP.iSu2RcCcdm78xbxNDJMJSgHaEo?pid=ImgDet&rs=1";
-        Song song1 = new Song("JingleBell", "Christmas Song", str2, str1);
         Intent intent = new Intent(this, MyService.class);
         Bundle bundle = new Bundle();
-        bundle.putSerializable("object_song", song1);
+        bundle.putSerializable("object_song", song);
         intent.putExtras(bundle);
         startService(intent);
-
     }
 
     @Override

@@ -24,7 +24,7 @@
             android:layout_height="wrap_content"
             android:text="Name"
             android:textSize="16dp"
-            android:textColor="@color/dark_green"
+            android:textColor="@color/white"
             />
         <TextView
             android:id="@+id/tvmusician"

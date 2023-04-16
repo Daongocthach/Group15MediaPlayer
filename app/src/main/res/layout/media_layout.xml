@@ -105,6 +105,7 @@
                         android:orientation="vertical">
 
                         <ImageView
+                            android:id="@+id/image_upload"
                             android:layout_width="50dp"
                             android:layout_height="50dp"
                             android:layout_gravity="center"
@@ -115,7 +116,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
-                            android:text="Nhạc mới"
+                            android:text="Upload"
                             android:textAlignment="center"
                             android:textColor="@color/yellow"
                             android:textStyle="bold" />
@@ -199,13 +200,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="400dp"
                 android:orientation="vertical">
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recycle_view"
-                    android:layout_width="match_parent"
-                    android:layout_height="250dp"
-                    android:background="#FFEFD5">
-
-                </androidx.recyclerview.widget.RecyclerView>
                 <TextView
                     android:id="@+id/tv_name_category"
                     android:layout_width="wrap_content"
@@ -217,8 +211,9 @@
                     android:textSize="20dp"/>
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycle_view_new"
+                    android:background="@color/white_pink"
                     android:layout_width="match_parent"
-                    android:layout_height="100dp">
+                    android:layout_height="match_parent">
                 </androidx.recyclerview.widget.RecyclerView>
             </LinearLayout>
         </LinearLayout>

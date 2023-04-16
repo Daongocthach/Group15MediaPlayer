@@ -3,12 +3,14 @@
     android:id="@+id/newmusic_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
-    <ImageView
+    android:orientation="horizontal"
+    android:layout_marginTop="10dp"
+    android:background="@color/white_pink">
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imageViewItem"
         android:layout_marginStart="10dp"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:src="@drawable/profile" />
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,6 +24,7 @@
             android:textSize="30sp"
             android:textStyle="bold"
             android:textAlignment="center"
+            android:textColor="@color/dark_orange"
             android:text="Moonlight Sonate"/>
         <TextView
             android:id="@+id/tvmusician"
@@ -29,6 +32,7 @@
             android:layout_height="wrap_content"
             android:textSize="25sp"
             android:textAlignment="center"
+            android:textColor="@color/dark_gray"
             android:text="Moonlight Sonate"/>
     </LinearLayout>
 

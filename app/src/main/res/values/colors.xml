@@ -37,4 +37,6 @@
     <color name="dark_orange">#FF8C00</color>
 
     <color name="white_pink">#FFEFD5</color>
+    <color name="LightSlateBlue">#8470FF</color>
+    <color name="MidnightBlue">#191970</color>
 </resources>

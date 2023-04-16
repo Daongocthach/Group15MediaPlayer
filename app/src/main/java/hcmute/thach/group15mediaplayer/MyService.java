@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.media.session.MediaSession;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -24,6 +25,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.concurrent.ExecutionException;
 
 import Model.Song;
 
@@ -131,7 +134,14 @@ public class MyService extends Service {
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.img123);
+        Bitmap bitmap = null;
+        try {
+            bitmap = new GetImageFromUrl().execute(song.getImage()).get();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         MediaSession mediaSession = new MediaSession(this, "tag");
 
@@ -140,18 +150,40 @@ public class MyService extends Service {
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setSmallIcon(R.drawable.ic_stat_player)
                 .addAction(R.drawable.ic_prev, "Previous", null)
-                .addAction(R.drawable.ic_pause, "Pause", null)
+                .addAction(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, isPlaying ? "Pause" : "Resume", getPendingIntent(this, isPlaying ? ACTION_PAUSE : ACTION_RESUME))
                 .addAction(R.drawable.ic_next, "Next", null)
+                .addAction(R.drawable.ic_clear, "Clear", getPendingIntent(this, ACTION_CLEAR))
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0)
                         .setShowActionsInCompactView(1)
-                        .setShowActionsInCompactView(2))
+                        .setShowActionsInCompactView(2)
+                        .setShowActionsInCompactView(3))
+
                 .setContentTitle("Wonderful music")
                 .setContentText("My Awesome Band")
                 .setLargeIcon(bitmap)
                 .build();
 
         startForeground(1, notification);
+    }
+    public class GetImageFromUrl extends AsyncTask<String, Void, Bitmap> {
+        @Override
+        protected Bitmap doInBackground(String... url) {
+            String stringUrl = url[0];
+            Bitmap bitmap = null;
+            InputStream inputStream;
+            try {
+                inputStream = new java.net.URL(stringUrl).openStream();
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return bitmap;
+        }
+        @Override
+        protected void onPostExecute(Bitmap bitmap){
+            super.onPostExecute(bitmap);
+        }
     }
     private PendingIntent getPendingIntent(Context context, int action) {
         Intent intent = new Intent(this, MyReceiver.class);

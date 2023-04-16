@@ -17,6 +17,7 @@ import java.util.List;
 
 import Interface.IClickItem;
 import Model.Song;
+import de.hdodenhof.circleimageview.CircleImageView;
 import hcmute.thach.group15mediaplayer.PlayMediaActivity;
 import hcmute.thach.group15mediaplayer.R;
 
@@ -52,9 +53,6 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.NewSongV
 
         Picasso.get()
                 .load(song.getImage().trim())
-                .placeholder(R.mipmap.ic_launcher)
-                .fit()
-                .centerCrop()
                 .into(holder.imgsource);
         holder.name.setText(song.getTittle());
         holder.Songan.setText(song.getSingle());
@@ -78,7 +76,7 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.NewSongV
     public class NewSongViewHolder extends RecyclerView.ViewHolder{
         private LinearLayout newSonglayout;
         private TextView name, Songan;
-        private ImageView imgsource;
+        private CircleImageView imgsource;
         public NewSongViewHolder(@NonNull View itemView) {
             super(itemView);
             newSonglayout = itemView.findViewById(R.id.newmusic_layout);

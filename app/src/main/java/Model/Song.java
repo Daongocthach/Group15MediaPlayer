@@ -11,6 +11,8 @@ public class Song implements Serializable {
     private String resource;
     private String mKey;
 
+    public Song() {
+    }
 
     public Song(String title, String single, String image, String resource) {
         if (title.trim().equals("")) {
