@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
+
+import androidx.annotation.Nullable;
 import androidx.media.app.NotificationCompat.MediaStyle;
 
 
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import Model.Song;
@@ -36,8 +39,12 @@ public class MyService extends Service {
     public static final int ACTION_RESUME = 2;
     public static final int ACTION_CLEAR = 3;
     public static final int ACTION_START = 4;
+    private static final int ACTION_NEXT = 5;
     private boolean isPlaying;
-    Song mSong;
+    private ArrayList<Song> songList;
+    private int pos;
+    private Song mSong;
+
     public MyService() {
     }
 
@@ -46,20 +53,23 @@ public class MyService extends Service {
         super.onCreate();
         Log.e("Thach", "MyService onCreate");
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.e("Thach", "MyService onDestroy");
-        if(mediaPlayer!=null){
+        if (mediaPlayer != null) {
             mediaPlayer.release();
             mediaPlayer = null;
         }
     }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Bundle bundle = intent.getExtras();
-        if (bundle != null) {
-            Song song = (Song) bundle.get("object_song");
+        songList = (ArrayList<Song>) intent.getSerializableExtra("songList");
+        pos = intent.getIntExtra("pos", 0);
+        if (!songList.isEmpty()) {
+            Song song = songList.get(pos);
             if (song != null) {
                 mSong = song;
                 startMusic(song);
@@ -68,6 +78,7 @@ public class MyService extends Service {
         }
 
         int actionMusic = intent.getIntExtra("action_music_service", 0);
+
         handleActionMusic(actionMusic);
 
 
@@ -87,8 +98,17 @@ public class MyService extends Service {
         isPlaying = true;
         sendActionToActivity(ACTION_START);
     }
-    private void playSong(String source) {
 
+    private void playNext() {
+        if (mediaPlayer != null && isPlaying) {
+            pos = pos + 1;
+            mediaPlayer.release();
+            sendNotification(mSong);
+            sendActionToActivity(ACTION_NEXT);
+        }
+    }
+
+    private void playSong(String source) {
         try {
             mediaPlayer.setDataSource(source);
             mediaPlayer.prepare();
@@ -96,6 +116,7 @@ public class MyService extends Service {
             e.printStackTrace();
         }
     }
+
     private void handleActionMusic(int action) {
         switch (action) {
             case ACTION_PAUSE:
@@ -108,6 +129,9 @@ public class MyService extends Service {
                 stopSelf();
                 sendActionToActivity(ACTION_CLEAR);
                 break;
+            case ACTION_NEXT:
+                playNext();
+                sendActionToActivity(ACTION_NEXT);
         }
     }
 
@@ -151,7 +175,7 @@ public class MyService extends Service {
                 .setSmallIcon(R.drawable.ic_stat_player)
                 .addAction(R.drawable.ic_prev, "Previous", null)
                 .addAction(isPlaying ? R.drawable.ic_pause : R.drawable.ic_play, isPlaying ? "Pause" : "Resume", getPendingIntent(this, isPlaying ? ACTION_PAUSE : ACTION_RESUME))
-                .addAction(R.drawable.ic_next, "Next", null)
+                .addAction(R.drawable.ic_next, "Next", getPendingIntent(this, ACTION_NEXT))
                 .addAction(R.drawable.ic_clear, "Clear", getPendingIntent(this, ACTION_CLEAR))
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setShowActionsInCompactView(0)
@@ -159,13 +183,14 @@ public class MyService extends Service {
                         .setShowActionsInCompactView(2)
                         .setShowActionsInCompactView(3))
 
-                .setContentTitle("Wonderful music")
-                .setContentText("My Awesome Band")
+                .setContentTitle(song.getTittle())
+                .setContentText(song.getSingle())
                 .setLargeIcon(bitmap)
                 .build();
 
         startForeground(1, notification);
     }
+
     public class GetImageFromUrl extends AsyncTask<String, Void, Bitmap> {
         @Override
         protected Bitmap doInBackground(String... url) {
@@ -180,11 +205,14 @@ public class MyService extends Service {
             }
             return bitmap;
         }
+
         @Override
-        protected void onPostExecute(Bitmap bitmap){
+        protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
         }
+
     }
+
     private PendingIntent getPendingIntent(Context context, int action) {
         Intent intent = new Intent(this, MyReceiver.class);
         intent.putExtra("action_music", action);
@@ -196,6 +224,7 @@ public class MyService extends Service {
                 PendingIntent.FLAG_UPDATE_CURRENT
         );
     }
+
     private void sendActionToActivity(int action) {
         Intent intent = new Intent("send_data_to_activity");
         Bundle bundle = new Bundle();
@@ -207,9 +236,10 @@ public class MyService extends Service {
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
+
     @Override
     public IBinder onBind(Intent intent) {
-       return null;
+        return null;
     }
 
 }

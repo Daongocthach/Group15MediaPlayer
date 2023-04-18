@@ -20,6 +20,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.content.BroadcastReceiver;
 import android.widget.Toast;
 
@@ -29,6 +30,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 import Model.Song;
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -36,19 +39,17 @@ public class PlayMediaActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE = 10;
     private FloatingActionButton btn;
     private CircleImageView imageMusic;
-    private ImageView imgPlay;
     private TextView textViewName, textViewMusican;
-    private MediaPlayer mediaPlayer;
 
     private RelativeLayout layout_bottom;
     private CircleImageView imgSong;
-    private ImageView imgPlayOrPause, imgClose;
+    private ImageView imgPlayOrPause, imgClose, btnStartStopService, btnNext, btnPrev;
     private TextView tvTitle, tvSingle;
-    private ImageView btnStartService;
     private FloatingActionButton btnStopService;
     private Song mSong;
     private boolean isPlaying;
-    @SuppressLint("MissingInflatedId")
+    int pos;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,10 +60,11 @@ public class PlayMediaActivity extends AppCompatActivity {
                 .registerReceiver(broadcastReceiver, new IntentFilter("send_data_to_activity"));
 
         imageMusic = findViewById(R.id.imageMusic);
+        btnNext = findViewById(R.id.next_button);
+        btnPrev = findViewById(R.id.previous_button);
         textViewName = findViewById(R.id.tvName);
         textViewMusican = findViewById(R.id.tvmusician);
-
-        btnStartService = findViewById(R.id.btn_start_service);
+        btnStartStopService = findViewById(R.id.btn_start_stop_service);
         btnStopService = findViewById(R.id.btn_stop_service);
         layout_bottom = findViewById(R.id.layout_bottom);
         imgSong = findViewById(R.id.img_song);
@@ -70,33 +72,55 @@ public class PlayMediaActivity extends AppCompatActivity {
         imgClose = findViewById(R.id.close);
         tvTitle = findViewById(R.id.tv_tittle);
         tvSingle = findViewById(R.id.tv_single_song);
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        ArrayList<Song> songList = (ArrayList<Song>) getIntent().getSerializableExtra("songList");
+        pos = getIntent().getIntExtra("pos", 0);
+        loadImage(songList, pos);
 
-        Intent intent = getIntent();
-        Bundle bundle = intent.getExtras();
-        if (bundle != null) {
-            Song song = (Song) bundle.get("object_song");
-            if (song != null) {
-                mSong = song;
-                textViewMusican.setText(song.getSingle());
-                textViewName.setText(song.getTittle());
-                Picasso.get()
-                        .load(song.getImage().trim())
-                        .into(imageMusic);
+        btnStartStopService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isPlaying) {
+                    clickStopService();
+                } else {
+                    clickStartService(songList, pos);
+                }
             }
-        }
-        btnStartService.setOnClickListener((view -> clickStartService(mSong)));
+        });
         btnStopService.setOnClickListener((view -> checkPermission()));
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pos++;
+                loadImage(songList, pos);
+                clickStopService();
+                clickStartService(songList, pos);
+            }
+        });
+
     }
-    public void checkPermission(){
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+
+    private void loadImage(ArrayList<Song> songList, int pos) {
+        if (!songList.isEmpty()) {
+            mSong = songList.get(pos);
+            textViewMusican.setText(mSong.getSingle());
+            textViewName.setText(mSong.getTittle());
+            Picasso.get()
+                    .load(mSong.getImage().trim())
+                    .into(imageMusic);
+        }
+    }
+
+    public void checkPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED) {
                 String[] permission = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
                 requestPermissions(permission, REQUEST_PERMISSION_CODE);
-            } else{
+            } else {
                 startDowloadFile();
             }
-        } else{startDowloadFile();}
+        } else {
+            startDowloadFile();
+        }
     }
 
     @Override
@@ -122,7 +146,7 @@ public class PlayMediaActivity extends AppCompatActivity {
         request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, String.valueOf(System.currentTimeMillis()));
 
         DownloadManager downloadManager = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        if(downloadManager != null){
+        if (downloadManager != null) {
             downloadManager.enqueue(request);
         }
     }
@@ -180,13 +204,11 @@ public class PlayMediaActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (isPlaying) {
                     sendActionToService(MyService.ACTION_PAUSE);
-                }
-                else{
+                } else {
                     sendActionToService(MyService.ACTION_RESUME);
                 }
             }
         });
-
         imgClose.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -211,17 +233,17 @@ public class PlayMediaActivity extends AppCompatActivity {
     }
 
 
-
     private void clickStopService() {
         Intent intent = new Intent(this, MyService.class);
+        sendActionToService(MyService.ACTION_CLEAR);
         stopService(intent);
+
     }
 
-    private void clickStartService(Song song) {
+    private void clickStartService(ArrayList<Song> songList, int pos) {
         Intent intent = new Intent(this, MyService.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("object_song", song);
-        intent.putExtras(bundle);
+        intent.putExtra("songList", songList);
+        intent.putExtra("pos", pos);
         startService(intent);
     }
 

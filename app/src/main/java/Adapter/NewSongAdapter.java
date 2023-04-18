@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import Interface.IClickItem;
@@ -23,15 +24,15 @@ import hcmute.thach.group15mediaplayer.R;
 
 
 public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.NewSongViewHolder> {
-    private List<Song> songList;
+    private ArrayList<Song> songList;
     private IClickItem iClickItem;
 
-    public NewSongAdapter(List<Song> songList, IClickItem iClickItem) {
+    public NewSongAdapter(ArrayList<Song> songList, IClickItem iClickItem) {
         this.songList = songList;
         this.iClickItem = iClickItem;
     }
 
-    public void setData(List<Song> songList){
+    public void setData(ArrayList<Song> songList){
         this.songList = songList;
         notifyDataSetChanged();
     }
@@ -60,7 +61,7 @@ public class NewSongAdapter extends RecyclerView.Adapter<NewSongAdapter.NewSongV
         holder.newSonglayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                iClickItem.onClickItemSong(song);
+                iClickItem.onClickItemSong(songList, position);
             }
         });
     }

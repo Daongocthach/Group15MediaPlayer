@@ -3,7 +3,6 @@ package hcmute.thach.group15mediaplayer;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -24,11 +23,8 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.ArrayList;
 import java.util.List;
 
-import Adapter.CategoryAdapter;
 import Adapter.NewSongAdapter;
-import Adapter.SongAdapter;
 import Interface.IClickItem;
-import Model.Category;
 import Model.Song;
 
 public class MediaActivity extends AppCompatActivity {
@@ -36,16 +32,13 @@ public class MediaActivity extends AppCompatActivity {
     ImageView signOut;
     ImageView img_upload;
     RecyclerView recyclerView, recyclerViewNew;
-    private CategoryAdapter categoryAdapter;
     private NewSongAdapter newSongAdapter;
-    private SongAdapter songAdapter;
     private FirebaseStorage mStorage;
     private DatabaseReference mDatabaseRef;
     private ValueEventListener mDBListener;
     private FirebaseAuth.AuthStateListener authListener;
     private FirebaseAuth auth;
-    List<Song> listSong = new ArrayList<>();;
-    List<Category> listCategory = new ArrayList<>();
+    ArrayList<Song> listSong = new ArrayList<>();;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,8 +69,6 @@ public class MediaActivity extends AppCompatActivity {
         auth = FirebaseAuth.getInstance();
 
         //get current user
-        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -102,8 +93,8 @@ public class MediaActivity extends AppCompatActivity {
 
         newSongAdapter = new NewSongAdapter(listSong, new IClickItem() {
             @Override
-            public void onClickItemSong(Song song) {
-                onCLickGoToPlayMedia(song);
+            public void onClickItemSong(ArrayList<Song> songList, int pos) {
+                onCLickGoToPlayMedia(songList, pos);
             }
         });
         newSongAdapter.setData(listSong);
@@ -126,11 +117,10 @@ public class MediaActivity extends AppCompatActivity {
 
 
     }
-    private void onCLickGoToPlayMedia(Song song){
+    private void onCLickGoToPlayMedia(ArrayList<Song> songList, int pos){
         Intent intent = new Intent(this, PlayMediaActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("object_song", song);
-        intent.putExtras(bundle);
+        intent.putExtra("songList", songList);
+        intent.putExtra("pos", pos);
         startActivity(intent);
     }
 

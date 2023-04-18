@@ -1,7 +1,9 @@
 package Interface;
 
+import java.util.ArrayList;
+
 import Model.Song;
 
 public interface IClickItem {
-    void onClickItemSong(Song song);
+    void onClickItemSong(ArrayList<Song> songList, int pos);
 }
